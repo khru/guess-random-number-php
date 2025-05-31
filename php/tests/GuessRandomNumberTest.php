@@ -47,4 +47,13 @@ class GuessRandomNumberTest extends TestCase {
 
         $this->assertSame('game over', $actual);
     }
+
+    #[test]
+    public function the_user_will_guess_on_3rd_attempt(): void {
+        $this->game->play(6);
+        $this->game->play(5);
+        $actual = $this->game->play(3);
+
+        $this->assertSame('won', $actual);
+    }
 }
