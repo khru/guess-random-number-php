@@ -7,41 +7,34 @@ use PHPUnit\Framework\TestCase;
 
 class GuessRandomNumberTest extends TestCase {
 
-    #[test]
-    public function the_user_wins_with_just_one_try(): void {
+    private $game;
+    public function setUp(): void
+    {
         $stubRandomNumberGenerator = $this->createStub(RandomNumberGenerator::class);
         $stubRandomNumberGenerator
             ->method('generate')
             ->willReturn(3);
-        $game = new GuessRandomNumber($stubRandomNumberGenerator);
+        $this->game = new GuessRandomNumber($stubRandomNumberGenerator);
+    }
 
-        $actual = $game->play(3);
+    #[test]
+    public function the_user_wins_with_just_one_try(): void {
+
+        $actual = $this->game->play(3);
 
         $this->assertSame('won', $actual);
     }
 
     #[test]
     public function the_user_will_give_a_lower_number(): void {
-        $stubRandomNumberGenerator = $this->createStub(RandomNumberGenerator::class);
-        $stubRandomNumberGenerator
-            ->method('generate')
-            ->willReturn(3);
-        $game = new GuessRandomNumber($stubRandomNumberGenerator);
-
-        $actual = $game->play(1);
+        $actual = $this->game->play(1);
 
         $this->assertSame('higher', $actual);
     }
 
     #[test]
     public function the_user_will_give_a_higher_number(): void {
-        $stubRandomNumberGenerator = $this->createStub(RandomNumberGenerator::class);
-        $stubRandomNumberGenerator
-            ->method('generate')
-            ->willReturn(3);
-        $game = new GuessRandomNumber($stubRandomNumberGenerator);
-
-        $actual = $game->play(5);
+        $actual = $this->game->play(5);
 
         $this->assertSame('lower', $actual);
     }

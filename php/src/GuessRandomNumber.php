@@ -17,6 +17,9 @@ class GuessRandomNumber
         if ($guessAttempt < $this->randomNumber) {
             return 'higher';
         }
+        if ($guessAttempt > $this->randomNumber) {
+            return 'lower';
+        }
         return 'won';
     }
 }
