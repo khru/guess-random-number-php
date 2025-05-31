@@ -1,0 +1,55 @@
+name: Validate changed Bootstraps
+
+on: [push, pull_request]
+
+jobs:
+  find_bootstraps:
+    name: Find changed bootstraps
+    runs-on: ubuntu-latest
+    outputs:
+      bootstraps: ${{ steps.generate-matrix.outputs.bootstraps }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+      - name: Run changed-files with json output
+        id: changed-dirs
+        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46
+        with:
+          dir_names: true
+      - name: Generate Matrix
+        id: generate-matrix
+        run: |
+          set -x
+          BOOTSTRAPS=$(ls -d */ | sed 's/.$//');
+
+          CHANGED_FILES=$(echo "${{ steps.changed-dirs.outputs.all_changed_files }}" | xargs -n1)
+
+          CHANGED_BOOTSTRAPS=$(for bootstrap in $BOOTSTRAPS;
+          do
+            echo "$CHANGED_FILES" | grep -qE "^${bootstrap}" && echo "$bootstrap" || true
+          done | jq -Rsc '. / "\n" - [""]')
+          echo "bootstraps=${CHANGED_BOOTSTRAPS}" >> $GITHUB_OUTPUT
+
+  run_tests:
+    name: Validate Bootstrap ${{ matrix.bootstrap }}
+    needs: [find_bootstraps]
+    runs-on: ubuntu-latest
+    if: ${{ needs.find_bootstraps.outputs.bootstraps != '[]' && needs.find_bootstraps.outputs.bootstraps != '' }}
+    strategy:
+      matrix:
+        bootstrap: ${{ fromJson(needs.find_bootstraps.outputs.bootstraps) }}
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: lts/*
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Install Dev Tools
+        working-directory: .bin/
+        run: npm install
+      - name: Set up container for ${{ matrix.bootstrap }}
+        run: |
+          ./.bin/start_devcontainer.sh "${{ matrix.bootstrap }}"
+      - name: Expect failing test for ${{ matrix.bootstrap }}
+        run: |
+          ./.bin/run_test_in_devcontainer.sh "${{ matrix.bootstrap }}"

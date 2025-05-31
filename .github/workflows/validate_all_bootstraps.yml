@@ -1,0 +1,53 @@
+name: Validate all Bootstraps
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/**"
+      - ".bin/**"
+  pull_request:
+    paths:
+      - ".github/**"
+      - ".bin/**"
+
+jobs:
+  find_bootstraps:
+    name: Find all Bootstraps with a devcontainer spec
+    runs-on: ubuntu-latest
+    outputs:
+      bootstraps: ${{ steps.generate-matrix.outputs.bootstraps }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Generate Matrix
+        id: generate-matrix
+        run: |
+          set -x
+          BOOTSTRAPS=$(ls -d */ | sed 's/.$//' | jq -Rsc '. / "\n" - [""]')
+          echo "bootstraps=${BOOTSTRAPS}" >> $GITHUB_OUTPUT
+
+  run_tests:
+    name: Validate Bootstrap ${{ matrix.bootstrap }}
+    needs: [find_bootstraps]
+    runs-on: ubuntu-latest
+    if: ${{ needs.find_bootstraps.outputs.bootstraps != '[]' && needs.find_bootstraps.outputs.bootstraps != '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        bootstrap: ${{ fromJson(needs.find_bootstraps.outputs.bootstraps) }}
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: lts/*
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Install Dev Tools
+        working-directory: .bin/
+        run: npm install
+      - name: Set up container for ${{ matrix.bootstrap }}
+        run: |
+          ./.bin/start_devcontainer.sh "${{ matrix.bootstrap }}"
+      - name: Expect failing test for ${{ matrix.bootstrap }}
+        run: |
+          ./.bin/run_test_in_devcontainer.sh "${{ matrix.bootstrap }}"
