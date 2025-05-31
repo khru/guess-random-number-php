@@ -32,4 +32,17 @@ class GuessRandomNumberTest extends TestCase {
 
         $this->assertSame('higher', $actual);
     }
+
+    #[test]
+    public function the_user_will_give_a_higher_number(): void {
+        $stubRandomNumberGenerator = $this->createStub(RandomNumberGenerator::class);
+        $stubRandomNumberGenerator
+            ->method('generate')
+            ->willReturn(3);
+        $game = new GuessRandomNumber($stubRandomNumberGenerator);
+
+        $actual = $game->play(5);
+
+        $this->assertSame('lower', $actual);
+    }
 }
