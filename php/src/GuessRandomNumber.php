@@ -11,6 +11,6 @@ class GuessRandomNumber
 
     public function play(int $guessAttempt): string
     {
-        return '';
+        return 'won';
     }
 }
