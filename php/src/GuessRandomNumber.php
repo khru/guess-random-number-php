@@ -16,7 +16,7 @@ class GuessRandomNumber
 
     public function play(int $guessAttempt): string
     {
-        if ($this->currentAttempts + 1 >= GuessRandomNumber::MAX_ATTEMPTS && $guessAttempt !== $this->randomNumber) {
+        if ($this->isTheLastChance() && $guessAttempt !== $this->randomNumber) {
             return 'game over';
         }
 
@@ -31,5 +31,10 @@ class GuessRandomNumber
 
         $this->currentAttempts++;
         return 'won';
+    }
+
+    private function isTheLastChance(): bool
+    {
+        return $this->currentAttempts + 1 >= GuessRandomNumber::MAX_ATTEMPTS;
     }
 }
