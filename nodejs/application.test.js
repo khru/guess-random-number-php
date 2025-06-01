@@ -1,4 +1,4 @@
-describe("A Test", () => {
+describe("A GuessRandomNumberRealTest", () => {
   it("fails", () => {
     expect(false).toEqual(true);
   });

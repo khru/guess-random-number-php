@@ -7,7 +7,7 @@ class GuessRandomNumber
 
     const MAX_ATTEMPTS = 3;
     private int $randomNumber;
-    private int $currentAttempts = 0;
+    private int $currentAttempts = 1;
 
     public function __construct(RandomNumberGenerator $generator)
     {
@@ -35,6 +35,6 @@ class GuessRandomNumber
 
     private function isTheLastChance(): bool
     {
-        return $this->currentAttempts + 1 >= GuessRandomNumber::MAX_ATTEMPTS;
+        return $this->currentAttempts >= GuessRandomNumber::MAX_ATTEMPTS;
     }
 }
