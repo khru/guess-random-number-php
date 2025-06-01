@@ -2,19 +2,17 @@
 
 use Application\GuessRandomNumber;
 use Application\RandomNumberGenerator;
+use Application\RealRandomNumberGenerator;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class GuessRandomNumberTest extends TestCase {
 
-    private $game;
+    private GuessRandomNumber $game;
     public function setUp(): void
     {
-        $stubRandomNumberGenerator = $this->createStub(RandomNumberGenerator::class);
-        $stubRandomNumberGenerator
-            ->method('generate')
-            ->willReturn(3);
-        $this->game = new GuessRandomNumber($stubRandomNumberGenerator);
+        $randomNumberGenerator = new RealRandomNumberGenerator(3,3);
+        $this->game = new GuessRandomNumber($randomNumberGenerator);
     }
 
     #[test]
